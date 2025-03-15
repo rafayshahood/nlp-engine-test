@@ -6,6 +6,7 @@ include(CTest)
 enable_testing()
 
 find_package(ICU REQUIRED COMPONENTS i18n uc data io)
+
 set(CMAKE_GENERATOR_PLATFORM Win32 HINT)
 
 if(MSVC)
@@ -29,21 +30,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 
-# ✅ Fix for Ubuntu 20.04: Explicitly link libdl
-find_library(DL_LIBRARY dl)
-
-if (DL_LIBRARY)
-    message(STATUS "Found libdl: ${DL_LIBRARY}")
-    target_link_libraries(nlp PRIVATE ${ICU_LIBRARIES} ${DL_LIBRARY})
-else()
-    message(FATAL_ERROR "libdl not found")
-endif()
-
-# ✅ Ensure correct linking on Linux
-if(UNIX AND NOT APPLE)
-    target_link_libraries(nlp PRIVATE -ldl)
-endif()
-
 include_directories(cs/include)
 include_directories(include)
 include_directories(include/Api)
@@ -55,6 +41,20 @@ add_subdirectory(src)
 add_subdirectory(lite)
 add_subdirectory(nlp)
 add_subdirectory(test)
+
+# ✅ Explicitly link libdl to fix Ubuntu 20.04 linking issue
+if(UNIX AND NOT APPLE)
+    find_library(DL_LIBRARY dl)
+    if(DL_LIBRARY)
+        message(STATUS "Found libdl: ${DL_LIBRARY}")
+        target_link_libraries(nlp PRIVATE ${ICU_LIBRARIES} ${DL_LIBRARY})
+    else()
+        message(FATAL_ERROR "libdl not found")
+    endif()
+endif()
+
+# ✅ Use CMake's built-in variable for better compatibility
+target_link_libraries(nlp PRIVATE ${ICU_LIBRARIES} ${CMAKE_DL_LIBS})
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
