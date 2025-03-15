@@ -53,7 +53,12 @@ if(NOT DL_LIBRARY)
     message(FATAL_ERROR "libdl not found")
 endif()
 
-# Ensure ICU and libdl are correctly linked
+# ✅ Ensure ICU and libdl are correctly linked
 target_link_libraries(nlp PRIVATE ${ICU_LIBRARIES} ${DL_LIBRARY})
+
+# ✅ Ensure correct linking on Linux
+if(UNIX AND NOT APPLE)
+    target_link_libraries(nlp PRIVATE -ldl)
+endif()
 
 include(CPack)
