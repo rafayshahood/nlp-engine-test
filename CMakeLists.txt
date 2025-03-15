@@ -29,8 +29,20 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 
-# build shared library (DLL in Windows)
-# add_definitions(-DSHARED_LIB)
+# ✅ Fix for Ubuntu 20.04: Explicitly link libdl
+find_library(DL_LIBRARY dl)
+
+if (DL_LIBRARY)
+    message(STATUS "Found libdl: ${DL_LIBRARY}")
+    target_link_libraries(nlp PRIVATE ${ICU_LIBRARIES} ${DL_LIBRARY})
+else()
+    message(FATAL_ERROR "libdl not found")
+endif()
+
+# ✅ Ensure correct linking on Linux
+if(UNIX AND NOT APPLE)
+    target_link_libraries(nlp PRIVATE -ldl)
+endif()
 
 include_directories(cs/include)
 include_directories(include)
@@ -46,19 +58,5 @@ add_subdirectory(test)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
-
-# ✅ Fix for Ubuntu 20.04: Explicitly link libdl
-find_library(DL_LIBRARY dl)
-if(NOT DL_LIBRARY)
-    message(FATAL_ERROR "libdl not found")
-endif()
-
-# ✅ Ensure ICU and libdl are correctly linked
-target_link_libraries(nlp PRIVATE ${ICU_LIBRARIES} ${DL_LIBRARY})
-
-# ✅ Ensure correct linking on Linux
-if(UNIX AND NOT APPLE)
-    target_link_libraries(nlp PRIVATE -ldl)
-endif()
 
 include(CPack)

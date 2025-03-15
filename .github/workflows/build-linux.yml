@@ -25,7 +25,7 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y autoconf-archive build-essential cmake g++ libicu-dev
+          sudo apt-get install -y autoconf-archive build-essential cmake g++ libicu-dev libdl-dev
 
       - name: Vcpkg Bootstrap Shell
         run: ./bootstrap-vcpkg.sh
@@ -49,7 +49,8 @@ jobs:
                 -DVCPKG_BUILD_TYPE=release \
                 -B build -S . \
                 -DCMAKE_TOOLCHAIN_FILE='${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake' \
-                -DCMAKE_EXE_LINKER_FLAGS="-ldl"
+                -DCMAKE_EXE_LINKER_FLAGS="-ldl" \
+                -DCMAKE_SHARED_LINKER_FLAGS="-ldl"
 
       - name: Cmake Build all targets for ${{ matrix.os }}
         run: cmake --build build/ --target all
