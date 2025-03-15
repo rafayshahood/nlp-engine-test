@@ -47,12 +47,13 @@ add_subdirectory(test)
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 
-# ✅ Fix for Ubuntu 20.04 error: explicitly link libdl
+# ✅ Fix for Ubuntu 20.04: Explicitly link libdl
 find_library(DL_LIBRARY dl)
 if(NOT DL_LIBRARY)
     message(FATAL_ERROR "libdl not found")
 endif()
 
-target_link_libraries(nlp PRIVATE ${DL_LIBRARY})
+# Ensure ICU and libdl are correctly linked
+target_link_libraries(nlp PRIVATE ${ICU_LIBRARIES} ${DL_LIBRARY})
 
 include(CPack)

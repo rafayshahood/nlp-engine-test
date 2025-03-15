@@ -32,11 +32,10 @@ jobs:
         shell: bash
         working-directory: vcpkg
 
-
       - name: Install 3rd Party
         run: vcpkg install
         working-directory: vcpkg
-        
+
       - name: List $RUNNER_WORKSPACE before build
         run: find $RUNNER_WORKSPACE
         shell: bash
@@ -45,8 +44,13 @@ jobs:
         run: mkdir build
 
       - name: Generate Solution for ${{ matrix.os }}
-        run: cmake -DCMAKE_BUILD_TYPE=Release -DVCPKG_BUILD_TYPE=release -B build -S . -DCMAKE_TOOLCHAIN_FILE='${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake' -DCMAKE_EXE_LINKER_FLAGS="-ldl"
-        
+        run: |
+          cmake -DCMAKE_BUILD_TYPE=Release \
+                -DVCPKG_BUILD_TYPE=release \
+                -B build -S . \
+                -DCMAKE_TOOLCHAIN_FILE='${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake' \
+                -DCMAKE_EXE_LINKER_FLAGS="-ldl"
+
       - name: Cmake Build all targets for ${{ matrix.os }}
         run: cmake --build build/ --target all
 
@@ -62,7 +66,6 @@ jobs:
         with:
           name: nlp-${{ matrix.os }}.exe
           path: bin/nlp-${{ matrix.os }}.exe
-
 
       - name: Upload libicutu.a
         uses: actions/upload-artifact@v4
@@ -98,4 +101,3 @@ jobs:
           mode: addition
           tolerance: same
           output: parse-en-us-diff-${{ matrix.os }}.txt
-         
