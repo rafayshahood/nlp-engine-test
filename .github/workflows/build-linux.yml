@@ -45,8 +45,8 @@ jobs:
         run: mkdir build
 
       - name: Generate Solution for ${{ matrix.os }}
-        run: cmake -DCMAKE_BUILD_TYPE=Release -DVCPKG_BUILD_TYPE=release -B build -S . -DCMAKE_TOOLCHAIN_FILE='${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake'
-
+        run: cmake -DCMAKE_BUILD_TYPE=Release -DVCPKG_BUILD_TYPE=release -B build -S . -DCMAKE_TOOLCHAIN_FILE='${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake' -DCMAKE_EXE_LINKER_FLAGS="-ldl"
+        
       - name: Cmake Build all targets for ${{ matrix.os }}
         run: cmake --build build/ --target all
 
