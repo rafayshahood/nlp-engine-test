@@ -1,16 +1,21 @@
-cmake_minimum_required(VERSION 3.5.0)
-cmake_policy(SET CMP0079 NEW)  # Fix linking issue
-
-project(nlp VERSION 0.1.0)
+cmake_minimum_required(VERSION 3.16)  # Updated for better compatibility
+project(nlp VERSION 2.14.3)  # Set the correct version
 set(CMAKE_CXX_STANDARD 17)
 
 include(CTest)
 enable_testing()
 
+# Use vcpkg toolchain for package management
+if (CMAKE_TOOLCHAIN_FILE)
+    message(STATUS "Using toolchain file at: ${CMAKE_TOOLCHAIN_FILE}")
+else()
+    set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+endif()
+
+# Find ICU using vcpkg
 find_package(ICU REQUIRED COMPONENTS i18n uc data io)
 
-set(CMAKE_GENERATOR_PLATFORM Win32 HINT)
-
+# Platform-specific settings
 if(MSVC)
     add_compile_options(/w44005 /w44244 /w44311 /w44211 /w44302 /w44267 /w44312 /w45033 /w44624 /w44996 /w44273)
     add_definitions(-D_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
@@ -23,6 +28,8 @@ if(MSVC)
     add_definitions(-DNDEBUG)
     add_definitions(-D_WINDOWS)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:wchar_t /std:c++17")
+else()
+    add_definitions(-DUNIX)
 endif()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -44,21 +51,6 @@ add_subdirectory(lite)
 add_subdirectory(nlp)
 add_subdirectory(test)
 
-# ✅ Explicitly link libdl to fix Ubuntu 20.04 linking issue
-if(UNIX AND NOT APPLE)
-    find_library(DL_LIBRARY dl)
-    if(DL_LIBRARY)
-        message(STATUS "Found libdl: ${DL_LIBRARY}")
-        target_link_libraries(nlp PRIVATE ${ICU_LIBRARIES} ${DL_LIBRARY})
-    else()
-        message(FATAL_ERROR "libdl not found")
-    endif()
-endif()
-
-# ✅ Use CMake's built-in variable for better compatibility
-target_link_libraries(nlp PRIVATE ${ICU_LIBRARIES} ${CMAKE_DL_LIBS})
-
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
-
 include(CPack)
