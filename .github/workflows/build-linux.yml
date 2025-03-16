@@ -34,11 +34,10 @@ jobs:
           fi
         shell: bash
 
-      - name: Install Dependencies
+      - name: Install Required Dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y autoconf-archive build-essential cmake ninja-build curl unzip tar pkg-config libicu-dev
-
+          sudo apt update
+          sudo apt install -y autoconf-archive pkg-config python3 ninja-build build-essential cmake g++ git curl zip unzip tar
           
       - name: Vcpkg Bootstrap Shell
         run: ./bootstrap-vcpkg.sh
@@ -52,15 +51,9 @@ jobs:
       - name: Create Build Directory
         run: mkdir -p build
 
-      - name: Generate Build Files
-        run: |
-          cmake -DCMAKE_BUILD_TYPE=Release \
-                -DVCPKG_BUILD_TYPE=release \
-                -B build \
-                -S . \
-                -DCMAKE_TOOLCHAIN_FILE='${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake'
+      - name: Generate CMake Build Files
+        run: cmake -DCMAKE_BUILD_TYPE=Release -B build -S . -DCMAKE_TOOLCHAIN_FILE='${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake'
 
-                
       - name: Build NLP Engine
         run: cmake --build build/ --target all
 
