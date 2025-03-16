@@ -12,7 +12,8 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-latest]
+        os: [ubuntu-latest, ubuntu-22.04, ubuntu-20.04]  # Run on both latest and 22.04
+        arch: [x86_64, arm64]  
 
     env:
       VCPKG_DEFAULT_TRIPLET: ${{ matrix.arch == 'x86_64' && 'x64-linux' || 'arm64-linux' }}
@@ -25,14 +26,8 @@ jobs:
         with:
           submodules: true
 
-      - name: Set Architecture & Triplet
-        run: |
-          if [[ "${{ matrix.arch }}" == "x86_64" ]]; then
-            echo "VCPKG_DEFAULT_TRIPLET=x64-linux" >> $GITHUB_ENV
-          else
-            echo "VCPKG_DEFAULT_TRIPLET=arm64-linux" >> $GITHUB_ENV
-          fi
-        shell: bash
+      - name: Set Architecture
+        run: echo "ARCH=${{ matrix.arch }}" >> $GITHUB_ENV
 
       - name: Install Required Dependencies
         run: |
