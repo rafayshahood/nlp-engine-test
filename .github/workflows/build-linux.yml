@@ -28,11 +28,10 @@ jobs:
           sudo apt update
           sudo apt install -y autoconf-archive pkg-config python3 ninja-build build-essential cmake g++ git curl zip unzip tar
           
-      - name: Clone & Bootstrap Vcpkg
-        run: |
-          git clone https://github.com/microsoft/vcpkg.git $GITHUB_WORKSPACE/vcpkg
-          cd $GITHUB_WORKSPACE/vcpkg
-          ./bootstrap-vcpkg.sh
+      - name: Vcpkg Bootstrap Shell
+        run: ./bootstrap-vcpkg.sh
+        shell: bash
+        working-directory: vcpkg
 
       - name: Install 3rd Party Dependencies
         run: /vcpkg/vcpkg install --triplet x64-linux
