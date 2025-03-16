@@ -13,15 +13,21 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, ubuntu-22.04]  # Run on both latest and 22.04
+        arch: [x86_64, arm64]
 
     env:
-      VCPKG_DEFAULT_TRIPLET: x64-linux
+      VCPKG_DEFAULT_TRIPLET: ${{ matrix.arch == 'x86_64' && 'x64-linux' || 'arm64-linux' }}
+      
 
     steps:
+    
       - name: Checkout Repository
         uses: actions/checkout@v3
         with:
           submodules: true
+
+      - name: Set Architecture
+        run: echo "ARCH=${{ matrix.arch }}" >> $GITHUB_ENV
 
       - name: Install Required Dependencies
         run: |
