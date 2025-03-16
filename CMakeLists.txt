@@ -1,15 +1,28 @@
-cmake_minimum_required(VERSION 3.22.1)
+cmake_minimum_required(VERSION 3.5.0)
 project(nlp VERSION 0.1.0)
 set(CMAKE_CXX_STANDARD 17)
 
 include(CTest)
 enable_testing()
 
-# Ensure pkg-config is used for dependency resolution
-find_package(PkgConfig REQUIRED)
-
-# Find ICU package explicitly, ensuring compatibility with Ubuntu 22.04
 find_package(ICU REQUIRED COMPONENTS i18n uc data io)
+find_library(DL_LIBRARY dl)  # Ensure dl library is found
+
+set(CMAKE_GENERATOR_PLATFORM Win32 HINT)
+
+if(MSVC)
+    add_compile_options(/w44005 /w44244 /w44311 /w44211 /w44302 /w44267 /w44312>
+    add_definitions(-D_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
+    add_definitions(-DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+    add_definitions(-D_CRT_NON_CONFORMING_SWPRINTFS)
+    add_definitions(-DNONSTD_)
+    add_definitions(-D_CONSOLE)
+    add_definitions(-DWIN32)
+    add_definitions(-DNDEBUG)
+    add_definitions(-D_WINDOWS)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:wchar_t /std:c++17")
+endif()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 

@@ -12,8 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, ubuntu-22.04]  # Run on both latest and 22.04
-        arch: [x86_64, arm64]
+        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-latest]
 
     env:
       VCPKG_DEFAULT_TRIPLET: ${{ matrix.arch == 'x86_64' && 'x64-linux' || 'arm64-linux' }}
@@ -26,13 +25,20 @@ jobs:
         with:
           submodules: true
 
-      - name: Set Architecture
-        run: echo "ARCH=${{ matrix.arch }}" >> $GITHUB_ENV
-
-      - name: Install Required Dependencies
+      - name: Set Architecture & Triplet
         run: |
-          sudo apt update
-          sudo apt install -y autoconf-archive pkg-config python3 ninja-build build-essential cmake g++ git curl zip unzip tar
+          if [[ "${{ matrix.arch }}" == "x86_64" ]]; then
+            echo "VCPKG_DEFAULT_TRIPLET=x64-linux" >> $GITHUB_ENV
+          else
+            echo "VCPKG_DEFAULT_TRIPLET=arm64-linux" >> $GITHUB_ENV
+          fi
+        shell: bash
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y autoconf-archive build-essential cmake ninja-build curl unzip tar pkg-config libicu-dev
+
           
       - name: Vcpkg Bootstrap Shell
         run: ./bootstrap-vcpkg.sh
@@ -46,9 +52,15 @@ jobs:
       - name: Create Build Directory
         run: mkdir -p build
 
-      - name: Generate CMake Build Files
-        run: cmake -DCMAKE_BUILD_TYPE=Release -B build -S . -DCMAKE_TOOLCHAIN_FILE='${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake'
+      - name: Generate Build Files
+        run: |
+          cmake -DCMAKE_BUILD_TYPE=Release \
+                -DVCPKG_BUILD_TYPE=release \
+                -B build \
+                -S . \
+                -DCMAKE_TOOLCHAIN_FILE='${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake'
 
+                
       - name: Build NLP Engine
         run: cmake --build build/ --target all
 
