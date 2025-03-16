@@ -1,4 +1,6 @@
 cmake_minimum_required(VERSION 3.5.0)
+cmake_policy(SET CMP0079 NEW)  # Fix linking issue
+
 project(nlp VERSION 0.1.0)
 set(CMAKE_CXX_STANDARD 17)
 
