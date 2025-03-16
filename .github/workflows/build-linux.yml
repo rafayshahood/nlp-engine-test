@@ -40,12 +40,13 @@ jobs:
       - name: Install 3rd Party Dependencies
         run: |
           cd vcpkg
-          git pull
+          git fetch origin
+          git reset --hard origin/master  # Forces sync with remote
           ./bootstrap-vcpkg.sh
           vcpkg update
           vcpkg install --clean-after-build
           cd ..
-
+          
       - name: Make build directory
         run: mkdir build
 
