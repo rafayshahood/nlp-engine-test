@@ -33,8 +33,9 @@ jobs:
         shell: bash
         working-directory: vcpkg
 
-      - name: Install 3rd Party Dependencies
-        run: /vcpkg/vcpkg install --triplet x64-linux
+      - name: Install 3rd Party
+        run: vcpkg install
+        working-directory: vcpkg
 
       - name: Create Build Directory
         run: mkdir -p build
