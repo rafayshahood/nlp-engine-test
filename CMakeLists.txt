@@ -6,12 +6,16 @@ include(CTest)
 enable_testing()
 
 find_package(ICU REQUIRED COMPONENTS i18n uc data io)
-find_library(DL_LIBRARY dl)  # Ensure dl library is found
+
+# Ensure 'dl' is only linked on Linux (not MacOS or Windows)
+if(UNIX AND NOT APPLE)
+    find_library(DL_LIBRARY dl)
+endif()
 
 set(CMAKE_GENERATOR_PLATFORM Win32 HINT)
 
 if(MSVC)
-    add_compile_options(/w44005 /w44244 /w44311 /w44211 /w44302 /w44267 /w44312>
+    add_compile_options(/w44005 /w44244 /w44311 /w44211 /w44302 /w44267 /w44312 /w45033 /w44624 /w44996 /w44273)
     add_definitions(-D_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
     add_definitions(-DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
