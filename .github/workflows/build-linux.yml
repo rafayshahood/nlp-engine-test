@@ -40,20 +40,33 @@ jobs:
       - name: Create Build Directory
         run: mkdir -p build
 
-      - name: Generate CMake Build Files
-        run: cmake -DCMAKE_BUILD_TYPE=Release -B build -S . -DCMAKE_TOOLCHAIN_FILE='${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake'
+      - name: Generate Solution Linux
+        run: cmake -DCMAKE_BUILD_TYPE=Release -DVCPKG_BUILD_TYPE=release -B build -S . -DCMAKE_TOOLCHAIN_FILE='${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake'
 
-      - name: Build NLP Engine
+      - name: Cmake Build all targets Linux
         run: cmake --build build/ --target all
 
-      - name: Test Executable Version
+
+      - name: Test executable --version
         run: ./bin/nlp --version || true
         
-      - name: Upload Built Executable
+      - name: Upload nlpl.exe
         uses: actions/upload-artifact@v4
         with:
-          name: nlp-engine-bin-${{ matrix.os }}
-          path: bin/nlp
+          name: nlpl-engine-${{ matrix.os }}
+          path: bin/nlp.exe
+
+      - name: Upload libicutu.a
+        uses: actions/upload-artifact@v4
+        with:
+          name: libicutu.a
+          path: vcpkg_installed/x64-linux/lib/libicutu.a
+
+      - name: Upload libicuuc.a
+        uses: actions/upload-artifact@v4
+        with:
+          name: libicuuc.a
+          path: vcpkg_installed/x64-linux/lib/libicuuc.a
 
       - name: Checkout Analyzers Repo
         uses: actions/checkout@v3
@@ -64,6 +77,8 @@ jobs:
 
       - name: Run English Parser Test
         run: ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -DEV || true
+
+
 
       - name: Full English Test
         uses: LouisBrunner/diff-action@v0.2.0
