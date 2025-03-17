@@ -6,12 +6,10 @@ include(CTest)
 enable_testing()
 
 find_package(ICU REQUIRED COMPONENTS i18n uc data io)
-find_library(DL_LIBRARY dl)  # Ensure dl library is found
-
 set(CMAKE_GENERATOR_PLATFORM Win32 HINT)
 
 if(MSVC)
-    add_compile_options(/w44005 /w44244 /w44311 /w44211 /w44302 /w44267 /w44312>
+    add_compile_options(/w44005 /w44244 /w44311 /w44211 /w44302 /w44267 /w44312 /w45033 /w44624 /w44996 /w44273)
     add_definitions(-D_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
     add_definitions(-DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
@@ -30,6 +28,9 @@ set(NLP_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+
+# build shared library (DLL in Windows)
+# add_definitions(-DSHARED_LIB)
 
 include_directories(cs/include)
 include_directories(include)
