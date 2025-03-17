@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, ubuntu-22.04, ubuntu-20.04]  # Run on both latest and 22.04
+        os: [ubuntu-latest, ubuntu-22.04]  # Run on both latest and 22.04
 
     env:
       VCPKG_DEFAULT_TRIPLET: x64-linux
@@ -27,15 +27,14 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y autoconf-archive pkg-config python3 ninja-build build-essential cmake g++ git curl zip unzip tar
-          
+
       - name: Vcpkg Bootstrap Shell
         run: ./bootstrap-vcpkg.sh
         shell: bash
         working-directory: vcpkg
 
-      - name: Install 3rd Party
-        run: vcpkg install
-        working-directory: vcpkg
+      - name: Install 3rd Party Dependencies
+        run: /vcpkg/vcpkg install --triplet x64-linux
 
       - name: Create Build Directory
         run: mkdir -p build
