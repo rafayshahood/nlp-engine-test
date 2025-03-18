@@ -60,14 +60,14 @@ jobs:
         if: matrix.os == 'ubuntu-22.04'
         uses: actions/upload-artifact@v4
         with:
-          name: nlpl-ubuntu-22.04.exe.zip
+          name: nlpl-ubuntu-22.04.exe
           path: bin/nlpl.exe
 
       - name: Upload nlpl.exe (Ubuntu Latest)
         if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
         with:
-          name: nlpl-ubuntu-latest.exe.zip
+          name: nlpl-ubuntu-latest.exe
           path: bin/nlpl.exe
 
 
