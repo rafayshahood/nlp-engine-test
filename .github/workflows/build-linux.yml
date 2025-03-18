@@ -54,8 +54,8 @@ jobs:
       - name: Upload nlpl.exe
         uses: actions/upload-artifact@v4
         with:
-          name: nlpl-engine-${{ matrix.os }}-${{ github.run_id }}
-          path: bin/nlp.exe    
+          name: nlpl-engine-${{ matrix.os }}-${{ github.run_id }}.exe
+          path: bin/nlp    
 
       - name: Upload libicutu.a
         uses: actions/upload-artifact@v4
