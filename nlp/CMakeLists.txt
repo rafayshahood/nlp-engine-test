@@ -18,5 +18,8 @@ if (NOT DEFINED CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release")
 endif()
 
+# Ensure dl library is found
+find_library(DL_LIBRARY dl)
+
 add_executable(nlp ${nlp_src})
-target_link_libraries(nlp PUBLIC prim kbm consh words lite ${ICU_LIBRARIES})
+target_link_libraries(nlp PUBLIC prim kbm consh words lite ${ICU_LIBRARIES} ${DL_LIBRARY})
