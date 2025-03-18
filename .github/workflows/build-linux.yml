@@ -148,7 +148,11 @@ jobs:
           head -n 20 ./analyzers/parse-en-us/input/doj.txt_log/final.tree || echo "⚠️ Unable to read final.tree!"
         shell: bash
         
+      - name: Capture Installed Packages (Ubuntu 20.04)
+        if: matrix.os == 'ubuntu-20.04'
+        run: dpkg -l > ci_packages.txt
 
+        
       - name: Full English Test
         uses: LouisBrunner/diff-action@v0.2.0
         with:
