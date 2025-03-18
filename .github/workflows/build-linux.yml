@@ -60,23 +60,6 @@ jobs:
         shell: bash
 
 
-      # ✅ Debug Step: Check If `doj.txt_log/final.tree` Exists (Ubuntu 20.04)
-      - name: Debug File Structure (Ubuntu 20.04)
-        if: matrix.os == 'ubuntu-20.04'
-        run: ls -R analyzers/parse-en-us/input || true
-
-      # ✅ Ensure Log Directory Exists (Fix for Ubuntu 20.04)
-      - name: Ensure Log Directory Exists (Ubuntu 20.04)
-        if: matrix.os == 'ubuntu-20.04'
-        run: mkdir -p analyzers/parse-en-us/input/doj.txt_log
-
-      # ✅ Run English Parser Test (Force Failure If Broken)
-      - name: Run English Parser Test (Debug)
-        run: |
-          ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -DEV || (echo "Parser failed!" && exit 1)
-
-
-
       # ✅ Upload Executable with Updated Naming
       - name: Upload nlpl.exe (Ubuntu 20.04)
         if: matrix.os == 'ubuntu-20.04'
@@ -154,11 +137,16 @@ jobs:
       - name: Run English Parser Test
         run: ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -DEV || true
 
-
-      # ✅ Debug: List Files After Running Parser (Ubuntu 20.04)
-      - name: Debug File Structure After Parser (Ubuntu 20.04)
+      # ✅ Debugging for Ubuntu 20.04
+      - name: Debug Output for Ubuntu 20.04
         if: matrix.os == 'ubuntu-20.04'
-        run: ls -R analyzers/parse-en-us/input || true
+        run: |
+          echo "🔍 Checking if final.tree exists..."
+          ls -l ./analyzers/parse-en-us/input/doj.txt_log || echo "⚠️ doj.txt_log folder is missing!"
+          ls -l ./analyzers/parse-en-us/input/doj.txt_log/final.tree || echo "⚠️ final.tree file is missing!"
+          echo "📜 Displaying first 20 lines of final.tree (if exists)..."
+          head -n 20 ./analyzers/parse-en-us/input/doj.txt_log/final.tree || echo "⚠️ Unable to read final.tree!"
+        shell: bash
 
       - name: Full English Test
         uses: LouisBrunner/diff-action@v0.2.0
