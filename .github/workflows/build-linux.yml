@@ -34,17 +34,15 @@ jobs:
           fi
 
 
-      # ✅ Capture Installed Packages (For Debugging Ubuntu 20.04)
-      - name: Capture Installed Packages (Ubuntu 20.04)
+      # ✅ Ensure ICU Paths are Set for Ubuntu 20.04
+      - name: Fix ICU Paths for Ubuntu 20.04
         if: matrix.os == 'ubuntu-20.04'
-        run: dpkg -l > installed_packages_ubuntu_20.04.txt
-
-      - name: Upload Installed Packages List (Ubuntu 20.04)
-        if: matrix.os == 'ubuntu-20.04'
-        uses: actions/upload-artifact@v4
-        with:
-          name: installed_packages_ubuntu_20.04.txt
-          path: installed_packages_ubuntu_20.04.txt
+        run: |
+          echo "🔍 Setting up ICU paths for Ubuntu 20.04..."
+          echo 'export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH' >> ~/.bashrc
+          echo 'export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH' >> ~/.bashrc
+          source ~/.bashrc
+          echo "✅ ICU paths configured."
 
       - name: Vcpkg Bootstrap Shell
         run: ./bootstrap-vcpkg.sh
@@ -149,6 +147,7 @@ jobs:
 
       - name: Run English Parser Test
         run: ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -DEV || true
+
 
 
       # ✅ Debugging for Ubuntu 20.04
