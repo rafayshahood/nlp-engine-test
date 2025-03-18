@@ -147,25 +147,8 @@ jobs:
           echo "📜 Displaying first 20 lines of final.tree (if exists)..."
           head -n 20 ./analyzers/parse-en-us/input/doj.txt_log/final.tree || echo "⚠️ Unable to read final.tree!"
         shell: bash
-
-
-      - name: Debug NLP Execution (Ubuntu 20.04)
-        if: matrix.os == 'ubuntu-20.04'
-        run: |
-          echo "🔍 Checking NLP Execution Logs..."
-          ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -DEV || echo "⚠️ NLP execution failed!"
-          echo "📂 Checking directory contents after NLP execution..."
-          ls -l ./analyzers/parse-en-us/input/ || echo "⚠️ No input files generated!"
-          ls -l ./analyzers/parse-en-us/input/doj.txt_log/ || echo "⚠️ doj.txt_log not created!"
-
-      - name: Capture Installed Packages (Ubuntu 20.04)
-      if: matrix.os == 'ubuntu-20.04'
-      run: dpkg -l > ci_packages.txt
-
-      - name: Check Linked Libraries (Ubuntu 20.04)
-        if: matrix.os == 'ubuntu-20.04'
-        run: ldd ./bin/nlp
         
+
       - name: Full English Test
         uses: LouisBrunner/diff-action@v0.2.0
         with:
