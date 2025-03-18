@@ -33,6 +33,19 @@ jobs:
             sudo apt install -y libicu-dev
           fi
 
+
+      # ✅ Capture Installed Packages (For Debugging Ubuntu 20.04)
+      - name: Capture Installed Packages (Ubuntu 20.04)
+        if: matrix.os == 'ubuntu-20.04'
+        run: dpkg -l > installed_packages_ubuntu_20.04.txt
+
+      - name: Upload Installed Packages List (Ubuntu 20.04)
+        if: matrix.os == 'ubuntu-20.04'
+        uses: actions/upload-artifact@v4
+        with:
+          name: installed_packages_ubuntu_20.04.txt
+          path: installed_packages_ubuntu_20.04.txt
+
       - name: Vcpkg Bootstrap Shell
         run: ./bootstrap-vcpkg.sh
         shell: bash
@@ -137,7 +150,28 @@ jobs:
       - name: Run English Parser Test
         run: ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -DEV || true
 
+
       # ✅ Debugging for Ubuntu 20.04
+      - name: Debug ICU Installation (Ubuntu 20.04)
+        if: matrix.os == 'ubuntu-20.04'
+        run: |
+          echo "🔍 Checking ICU Installation..."
+          ls -l vcpkg_installed/x64-linux/lib || echo "⚠️ ICU libraries missing!"
+          icu-config --version || echo "⚠️ ICU version check failed!"
+
+      - name: Debug NLP Execution (Ubuntu 20.04)
+        if: matrix.os == 'ubuntu-20.04'
+        run: |
+          echo "🔍 Running NLP Execution..."
+          ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -DEV || echo "⚠️ NLP execution failed!"
+          
+          echo "📂 Checking directory contents after NLP execution..."
+          ls -l ./analyzers/parse-en-us/input/ || echo "⚠️ No input files generated!"
+          ls -l ./analyzers/parse-en-us/input/doj.txt_log/ || echo "⚠️ doj.txt_log not created!"
+
+          echo "📜 Checking NLP logs..."
+          cat .//vtrun_logfile.out || echo "⚠️ No log file found!"
+
       - name: Debug Output for Ubuntu 20.04
         if: matrix.os == 'ubuntu-20.04'
         run: |
@@ -148,11 +182,7 @@ jobs:
           head -n 20 ./analyzers/parse-en-us/input/doj.txt_log/final.tree || echo "⚠️ Unable to read final.tree!"
         shell: bash
         
-      - name: Capture Installed Packages (Ubuntu 20.04)
-        if: matrix.os == 'ubuntu-20.04'
-        run: dpkg -l > ci_packages.txt
 
-        
       - name: Full English Test
         uses: LouisBrunner/diff-action@v0.2.0
         with:
