@@ -49,13 +49,14 @@ jobs:
 
       - name: Test executable --version
         run: ./bin/nlp --version || true
-        
+
+
       - name: Upload nlpl.exe
         uses: actions/upload-artifact@v4
         with:
-          name: nlpl-engine-${{ matrix.os }}
-          path: bin/nlp.exe
-
+          name: nlpl-engine-${{ matrix.os }}-${{ github.run_id }}
+          path: bin/nlp.exe        
+     
       - name: Upload libicutu.a
         uses: actions/upload-artifact@v4
         with:
