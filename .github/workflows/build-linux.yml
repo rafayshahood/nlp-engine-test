@@ -50,24 +50,56 @@ jobs:
       - name: Test executable --version
         run: ./bin/nlp --version || true
 
+      - name: Copy nlp.exe to nlpl.exe
+        run: cp bin/nlp bin/nlpl.exe
+        shell: bash
 
-      - name: Upload nlpl.exe
+
+      # ✅ Upload Executable with Updated Naming
+      - name: Upload nlpl.exe (Ubuntu 22.04)
+        if: matrix.os == 'ubuntu-22.04'
         uses: actions/upload-artifact@v4
         with:
-          name: nlpl-engine-${{ matrix.os }}-${{ github.run_id }}.exe
-          path: bin/nlp    
+          name: nlpl-ubuntu-22.04.exe.zip
+          path: bin/nlpl.exe
 
-      - name: Upload libicutu.a
+      - name: Upload nlpl.exe (Ubuntu Latest)
+        if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
         with:
-          name: libicutu-${{ matrix.os }}-${{ github.run_id }}
+          name: nlpl-ubuntu-latest.exe.zip
+          path: bin/nlpl.exe
+
+
+      # ✅ Upload Libraries with Updated Naming
+      - name: Upload libicutu (Ubuntu 22.04)
+        if: matrix.os == 'ubuntu-22.04'
+        uses: actions/upload-artifact@v4
+        with:
+          name: libicutu-ubuntu-22.04.a
           path: vcpkg_installed/x64-linux/lib/libicutu.a
 
-      - name: Upload libicuuc.a
+      - name: Upload libicutu (Ubuntu Latest)
+        if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
         with:
-          name: libicuuc-${{ matrix.os }}-${{ github.run_id }}
+          name: libicutu-ubuntu-latest.a
+          path: vcpkg_installed/x64-linux/lib/libicutu.a
+
+      - name: Upload libicuuc (Ubuntu 22.04)
+        if: matrix.os == 'ubuntu-22.04'
+        uses: actions/upload-artifact@v4
+        with:
+          name: libicuuc-ubuntu-22.04.a
           path: vcpkg_installed/x64-linux/lib/libicuuc.a
+
+      - name: Upload libicuuc (Ubuntu Latest)
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: libicuuc-ubuntu-latest.a
+          path: vcpkg_installed/x64-linux/lib/libicuuc.a
+
 
       - name: Checkout Analyzers Repo
         uses: actions/checkout@v3
