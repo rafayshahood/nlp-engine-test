@@ -33,6 +33,17 @@ jobs:
             sudo apt install -y libicu-dev
           fi
 
+      # ✅ Debug: Capture System Info Before Build
+      - name: Capture System Info (Ubuntu 20.04)
+        if: matrix.os == 'ubuntu-20.04'
+        run: |
+          echo "🔍 Checking system info..."
+          uname -a
+          lsb_release -a || cat /etc/os-release
+          echo "🔍 Checking available memory..."
+          free -h
+          echo "🔍 Checking environment variables..."
+          env | sort
 
       # ✅ Ensure ICU Paths are Set for Ubuntu 20.04
       - name: Fix ICU Paths for Ubuntu 20.04
@@ -43,6 +54,7 @@ jobs:
           echo 'export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH' >> ~/.bashrc
           source ~/.bashrc
           echo "✅ ICU paths configured."
+
 
       - name: Vcpkg Bootstrap Shell
         run: ./bootstrap-vcpkg.sh
@@ -150,20 +162,22 @@ jobs:
 
 
 
-      # ✅ Debugging for Ubuntu 20.04
+      # ✅ Debug: ICU Installation & Paths
       - name: Debug ICU Installation (Ubuntu 20.04)
         if: matrix.os == 'ubuntu-20.04'
         run: |
           echo "🔍 Checking ICU Installation..."
           ls -l vcpkg_installed/x64-linux/lib || echo "⚠️ ICU libraries missing!"
-          icu-config --version || echo "⚠️ ICU version check failed!"
+          echo "🔍 ICU Libraries in System:"
+          ldconfig -p | grep icu || echo "⚠️ ICU not found in system libraries!"
 
+      # ✅ Debug: NLP Execution & Crash Info
       - name: Debug NLP Execution (Ubuntu 20.04)
         if: matrix.os == 'ubuntu-20.04'
         run: |
           echo "🔍 Running NLP Execution..."
           ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -DEV || echo "⚠️ NLP execution failed!"
-          
+
           echo "📂 Checking directory contents after NLP execution..."
           ls -l ./analyzers/parse-en-us/input/ || echo "⚠️ No input files generated!"
           ls -l ./analyzers/parse-en-us/input/doj.txt_log/ || echo "⚠️ doj.txt_log not created!"
@@ -171,6 +185,17 @@ jobs:
           echo "📜 Checking NLP logs..."
           cat .//vtrun_logfile.out || echo "⚠️ No log file found!"
 
+      # ✅ Debug: Capture Core Dump & System Logs
+      - name: Debug System Logs & Core Dump (Ubuntu 20.04)
+        if: matrix.os == 'ubuntu-20.04'
+        run: |
+          echo "🔍 Checking dmesg logs for segmentation faults..."
+          dmesg | tail -50 || echo "⚠️ No dmesg logs found!"
+          
+          echo "🔍 Checking linked libraries for nlp binary..."
+          ldd ./bin/nlp || echo "⚠️ Missing shared libraries!"
+
+      # ✅ Debug: Checking `final.tree` File
       - name: Debug Output for Ubuntu 20.04
         if: matrix.os == 'ubuntu-20.04'
         run: |
@@ -179,7 +204,6 @@ jobs:
           ls -l ./analyzers/parse-en-us/input/doj.txt_log/final.tree || echo "⚠️ final.tree file is missing!"
           echo "📜 Displaying first 20 lines of final.tree (if exists)..."
           head -n 20 ./analyzers/parse-en-us/input/doj.txt_log/final.tree || echo "⚠️ Unable to read final.tree!"
-        shell: bash
         
 
       - name: Full English Test
