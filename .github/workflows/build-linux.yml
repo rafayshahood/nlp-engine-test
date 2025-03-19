@@ -45,16 +45,14 @@ jobs:
           echo "🔍 Checking environment variables..."
           env | sort
 
-      # ✅ Ensure ICU Paths are Set for Ubuntu 20.04
-      - name: Fix ICU Paths for Ubuntu 20.04
+      # ✅ Ensure Ubuntu 20.04 Uses GCC 10
+      - name: Set GCC 10 as Default (Ubuntu 20.04)
         if: matrix.os == 'ubuntu-20.04'
         run: |
-          echo "🔍 Setting up ICU paths for Ubuntu 20.04..."
-          echo 'export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH' >> ~/.bashrc
-          echo 'export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH' >> ~/.bashrc
-          source ~/.bashrc
-          echo "✅ ICU paths configured."
-
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 100
+          gcc --version
+          g++ --version
 
       - name: Vcpkg Bootstrap Shell
         run: ./bootstrap-vcpkg.sh
@@ -161,41 +159,34 @@ jobs:
         run: ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -DEV || true
 
 
-
-      # ✅ Debug: ICU Installation & Paths
-      - name: Debug ICU Installation (Ubuntu 20.04)
+      # ✅ Debug: Check Linked Libraries and Symbols
+      - name: Debug Shared Library Links (Ubuntu 20.04)
         if: matrix.os == 'ubuntu-20.04'
         run: |
-          echo "🔍 Checking ICU Installation..."
-          ls -l vcpkg_installed/x64-linux/lib || echo "⚠️ ICU libraries missing!"
-          echo "🔍 ICU Libraries in System:"
-          ldconfig -p | grep icu || echo "⚠️ ICU not found in system libraries!"
-
-      # ✅ Debug: NLP Execution & Crash Info
-      - name: Debug NLP Execution (Ubuntu 20.04)
-        if: matrix.os == 'ubuntu-20.04'
-        run: |
-          echo "🔍 Running NLP Execution..."
-          ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -DEV || echo "⚠️ NLP execution failed!"
-
-          echo "📂 Checking directory contents after NLP execution..."
-          ls -l ./analyzers/parse-en-us/input/ || echo "⚠️ No input files generated!"
-          ls -l ./analyzers/parse-en-us/input/doj.txt_log/ || echo "⚠️ doj.txt_log not created!"
-
-          echo "📜 Checking NLP logs..."
-          cat .//vtrun_logfile.out || echo "⚠️ No log file found!"
-
-      # ✅ Debug: Capture Core Dump & System Logs
-      - name: Debug System Logs & Core Dump (Ubuntu 20.04)
-        if: matrix.os == 'ubuntu-20.04'
-        run: |
-          echo "🔍 Checking dmesg logs for segmentation faults..."
-          dmesg | tail -50 || echo "⚠️ No dmesg logs found!"
-          
           echo "🔍 Checking linked libraries for nlp binary..."
-          ldd ./bin/nlp || echo "⚠️ Missing shared libraries!"
+          ldd ./bin/nlp
+          echo "🔍 Checking for unresolved symbols..."
+          ldd -r ./bin/nlp || echo "⚠️ Unresolved symbols found!"
 
-      # ✅ Debug: Checking `final.tree` File
+      # ✅ Run NLP with GDB & Strace Debugging
+      - name: Debug NLP Execution with GDB (Ubuntu 20.04)
+        if: matrix.os == 'ubuntu-20.04'
+        run: |
+          echo "🔍 Running NLP Execution with GDB..."
+          gdb --batch --ex "run" --ex "bt" --args ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -DEV || echo "⚠️ NLP execution failed!"
+          echo "🔍 Running NLP Execution with strace..."
+          strace -o strace_output.log -f ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -DEV || echo "⚠️ NLP execution failed!"
+          
+      # ✅ Upload Debug Output
+      - name: Upload Debug Logs (Ubuntu 20.04)
+        if: matrix.os == 'ubuntu-20.04'
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-logs-ubuntu-20.04
+          path: |
+            strace_output.log
+            .//vtrun_logfile.out
+
       - name: Debug Output for Ubuntu 20.04
         if: matrix.os == 'ubuntu-20.04'
         run: |
@@ -204,7 +195,7 @@ jobs:
           ls -l ./analyzers/parse-en-us/input/doj.txt_log/final.tree || echo "⚠️ final.tree file is missing!"
           echo "📜 Displaying first 20 lines of final.tree (if exists)..."
           head -n 20 ./analyzers/parse-en-us/input/doj.txt_log/final.tree || echo "⚠️ Unable to read final.tree!"
-        
+
 
       - name: Full English Test
         uses: LouisBrunner/diff-action@v0.2.0
