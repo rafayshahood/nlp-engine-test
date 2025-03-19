@@ -28,32 +28,15 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y autoconf-archive pkg-config python3 ninja-build build-essential cmake g++ git curl zip unzip tar
-
+         
           if [[ "${{ matrix.os }}" == "ubuntu-20.04" ]]; then
-            sudo apt install -y libicu-dev
+            echo "Adding Ubuntu 22.04 (Jammy) repository for ICU 70..."
+            echo "deb http://archive.ubuntu.com/ubuntu jammy main universe" | sudo tee -a /etc/apt/sources.list
+            sudo apt update
+            sudo apt install -y libicu70 libicu-dev
           fi
 
-      # ✅ Debug: Capture System Info Before Build
-      - name: Capture System Info (Ubuntu 20.04)
-        if: matrix.os == 'ubuntu-20.04'
-        run: |
-          echo "🔍 Checking system info..."
-          uname -a
-          lsb_release -a || cat /etc/os-release
-          echo "🔍 Checking available memory..."
-          free -h
-          echo "🔍 Checking environment variables..."
-          env | sort
-
-      # ✅ Ensure Ubuntu 20.04 Uses GCC 10
-      - name: Set GCC 10 as Default (Ubuntu 20.04)
-        if: matrix.os == 'ubuntu-20.04'
-        run: |
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100
-          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 100
-          gcc --version
-          g++ --version
-
+ 
       - name: Vcpkg Bootstrap Shell
         run: ./bootstrap-vcpkg.sh
         shell: bash
@@ -157,44 +140,6 @@ jobs:
 
       - name: Run English Parser Test
         run: ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -DEV || true
-
-
-      # ✅ Debug: Check Linked Libraries and Symbols
-      - name: Debug Shared Library Links (Ubuntu 20.04)
-        if: matrix.os == 'ubuntu-20.04'
-        run: |
-          echo "🔍 Checking linked libraries for nlp binary..."
-          ldd ./bin/nlp
-          echo "🔍 Checking for unresolved symbols..."
-          ldd -r ./bin/nlp || echo "⚠️ Unresolved symbols found!"
-
-      # ✅ Run NLP with GDB & Strace Debugging
-      - name: Debug NLP Execution with GDB (Ubuntu 20.04)
-        if: matrix.os == 'ubuntu-20.04'
-        run: |
-          echo "🔍 Running NLP Execution with GDB..."
-          gdb --batch --ex "run" --ex "bt" --args ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -DEV || echo "⚠️ NLP execution failed!"
-          echo "🔍 Running NLP Execution with strace..."
-          strace -o strace_output.log -f ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -DEV || echo "⚠️ NLP execution failed!"
-          
-      # ✅ Upload Debug Output
-      - name: Upload Debug Logs (Ubuntu 20.04)
-        if: matrix.os == 'ubuntu-20.04'
-        uses: actions/upload-artifact@v4
-        with:
-          name: debug-logs-ubuntu-20.04
-          path: |
-            strace_output.log
-            .//vtrun_logfile.out
-
-      - name: Debug Output for Ubuntu 20.04
-        if: matrix.os == 'ubuntu-20.04'
-        run: |
-          echo "🔍 Checking if final.tree exists..."
-          ls -l ./analyzers/parse-en-us/input/doj.txt_log || echo "⚠️ doj.txt_log folder is missing!"
-          ls -l ./analyzers/parse-en-us/input/doj.txt_log/final.tree || echo "⚠️ final.tree file is missing!"
-          echo "📜 Displaying first 20 lines of final.tree (if exists)..."
-          head -n 20 ./analyzers/parse-en-us/input/doj.txt_log/final.tree || echo "⚠️ Unable to read final.tree!"
 
 
       - name: Full English Test
