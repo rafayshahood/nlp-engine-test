@@ -34,19 +34,6 @@ jobs:
             echo "deb http://archive.ubuntu.com/ubuntu jammy main universe" | sudo tee -a /etc/apt/sources.list
             sudo apt update
             sudo apt install -y libicu70 libicu-dev
-
-            echo "Installing glibc 2.35 for Ubuntu 20.04..."
-            sudo apt install -y libc6 libc6-dev
-            wget http://ftp.gnu.org/gnu/libc/glibc-2.35.tar.gz
-            tar -xvzf glibc-2.35.tar.gz
-            cd glibc-2.35
-            mkdir build
-            cd build
-            ../configure --prefix=/opt/glibc-2.35
-            make -j$(nproc)
-            sudo make install
-            echo 'export LD_LIBRARY_PATH=/opt/glibc-2.35/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
-            source ~/.bashrc
           fi
  
       - name: Vcpkg Bootstrap Shell
