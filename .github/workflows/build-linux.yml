@@ -29,11 +29,43 @@ jobs:
           sudo apt update
           sudo apt install -y autoconf-archive pkg-config python3 ninja-build build-essential cmake g++ git curl zip unzip tar
          
+
           if [[ "${{ matrix.os }}" == "ubuntu-20.04" ]]; then
-            echo "Adding Ubuntu 22.04 (Jammy) repository for ICU 70..."
+            echo "===== [DEBUG] OS and Initial Versions ====="
+            lsb_release -a || true
+            uname -a
+            echo "ICU Version:" && dpkg -l | grep libicu || true
+            echo "glibc Version:" && ldd --version | head -n 1
+            echo "Python Version:" && python3 --version
+            echo "Gawk Version:" && gawk --version | head -n 1 || echo "gawk not installed"
+            echo "Bison Version:" && bison --version | head -n 1 || echo "bison not installed"
+
+            echo "===== Adding Jammy Repo for ICU 70 ====="
             echo "deb http://archive.ubuntu.com/ubuntu jammy main universe" | sudo tee -a /etc/apt/sources.list
             sudo apt update
             sudo apt install -y libicu70 libicu-dev
+
+            echo "===== Installing Glibc Build Tools ====="
+            sudo apt install -y gawk bison python3 makeinfo
+
+            echo "===== Installing glibc 2.35 ====="
+            wget http://ftp.gnu.org/gnu/libc/glibc-2.35.tar.gz
+            tar -xvzf glibc-2.35.tar.gz
+            cd glibc-2.35
+            mkdir build
+            cd build
+            ../configure --prefix=/opt/glibc-2.35
+            make -j$(nproc)
+            sudo make install
+            echo 'export LD_LIBRARY_PATH=/opt/glibc-2.35/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
+            source ~/.bashrc
+
+            echo "===== [DEBUG] Post-Install Versions ====="
+            echo "ICU Version:" && dpkg -l | grep libicu || true
+            echo "glibc Version:" && /opt/glibc-2.35/lib/ld-*.so --version || true
+            echo "Python Version:" && python3 --version
+            echo "Gawk Version:" && gawk --version | head -n 1
+            echo "Bison Version:" && bison --version | head -n 1
           fi
  
       - name: Vcpkg Bootstrap Shell
