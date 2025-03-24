@@ -46,8 +46,7 @@ jobs:
             sudo apt install -y libicu70 libicu-dev
 
             echo "===== Installing Glibc Build Tools ====="
-            sudo apt install -y gawk bison python3 makeinfo
-
+            sudo apt install -y gawk bison python3 texinfo
             echo "===== Installing glibc 2.35 ====="
             wget http://ftp.gnu.org/gnu/libc/glibc-2.35.tar.gz
             tar -xvzf glibc-2.35.tar.gz
