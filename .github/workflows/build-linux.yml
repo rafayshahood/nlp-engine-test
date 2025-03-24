@@ -47,6 +47,7 @@ jobs:
 
             echo "===== Installing Glibc Build Tools ====="
             sudo apt install -y gawk bison python3 texinfo
+
             echo "===== Installing glibc 2.35 ====="
             wget http://ftp.gnu.org/gnu/libc/glibc-2.35.tar.gz
             tar -xvzf glibc-2.35.tar.gz
@@ -56,7 +57,11 @@ jobs:
             ../configure --prefix=/opt/glibc-2.35
             make -j$(nproc)
             sudo make install
+
             echo 'export LD_LIBRARY_PATH=/opt/glibc-2.35/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
+            echo 'export LIBRARY_PATH=/opt/glibc-2.35/lib:$LIBRARY_PATH' >> ~/.bashrc
+            echo 'export C_INCLUDE_PATH=/opt/glibc-2.35/include:$C_INCLUDE_PATH' >> ~/.bashrc
+            echo 'export CPLUS_INCLUDE_PATH=/opt/glibc-2.35/include:$CPLUS_INCLUDE_PATH' >> ~/.bashrc
             source ~/.bashrc
 
             echo "===== [DEBUG] Post-Install Versions ====="
@@ -80,7 +85,26 @@ jobs:
         run: mkdir -p build
 
       - name: Generate Solution Linux
-        run: cmake -DCMAKE_BUILD_TYPE=Release -DVCPKG_BUILD_TYPE=release -B build -S . -DCMAKE_TOOLCHAIN_FILE='${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake'
+        run: |
+          if [[ "${{ matrix.os }}" == "ubuntu-20.04" ]]; then
+            export LD_LIBRARY_PATH=/opt/glibc-2.35/lib:$LD_LIBRARY_PATH
+            export LIBRARY_PATH=/opt/glibc-2.35/lib:$LIBRARY_PATH
+            export C_INCLUDE_PATH=/opt/glibc-2.35/include:$C_INCLUDE_PATH
+            export CPLUS_INCLUDE_PATH=/opt/glibc-2.35/include:$CPLUS_INCLUDE_PATH
+
+            cmake -DCMAKE_BUILD_TYPE=Release \
+                  -DVCPKG_BUILD_TYPE=release \
+                  -DCMAKE_EXE_LINKER_FLAGS="-Wl,--rpath=/opt/glibc-2.35/lib -static-libgcc -static-libstdc++" \
+                  -DCMAKE_C_FLAGS="-I/opt/glibc-2.35/include" \
+                  -DCMAKE_CXX_FLAGS="-I/opt/glibc-2.35/include" \
+                  -B build -S . \
+                  -DCMAKE_TOOLCHAIN_FILE='${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake'
+          else
+            cmake -DCMAKE_BUILD_TYPE=Release \
+                  -DVCPKG_BUILD_TYPE=release \
+                  -B build -S . \
+                  -DCMAKE_TOOLCHAIN_FILE='${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake'
+          fi
 
       - name: Cmake Build all targets Linux
         run: cmake --build build/ --target all
