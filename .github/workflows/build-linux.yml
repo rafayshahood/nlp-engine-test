@@ -40,13 +40,10 @@ jobs:
             echo "Gawk Version:" && gawk --version | head -n 1 || echo "gawk not installed"
             echo "Bison Version:" && bison --version | head -n 1 || echo "bison not installed"
 
-            echo "===== Adding Jammy Repo for ICU 70 ====="
+             echo "===== Adding Jammy Repo for ICU 70 ====="
             echo "deb http://archive.ubuntu.com/ubuntu jammy main universe" | sudo tee -a /etc/apt/sources.list
             sudo apt update
-            sudo apt install -y libicu70 libicu-dev
-
-            echo "===== Installing Glibc Build Tools ====="
-            sudo apt install -y gawk bison python3 texinfo
+            sudo apt install -y libicu70 libicu-dev gawk bison texinfo
 
             echo "===== Installing glibc 2.35 ====="
             wget http://ftp.gnu.org/gnu/libc/glibc-2.35.tar.gz
@@ -65,13 +62,10 @@ jobs:
             source ~/.bashrc
 
             echo "===== [DEBUG] Post-Install Versions ====="
-            echo "ICU Version:" && dpkg -l | grep libicu || true
             echo "glibc Version:" && /opt/glibc-2.35/lib/ld-*.so --version || true
-            echo "Python Version:" && python3 --version
-            echo "Gawk Version:" && gawk --version | head -n 1
-            echo "Bison Version:" && bison --version | head -n 1
           fi
- 
+
+
       - name: Vcpkg Bootstrap Shell
         run: ./bootstrap-vcpkg.sh
         shell: bash
@@ -92,11 +86,11 @@ jobs:
             export C_INCLUDE_PATH=/opt/glibc-2.35/include:$C_INCLUDE_PATH
             export CPLUS_INCLUDE_PATH=/opt/glibc-2.35/include:$CPLUS_INCLUDE_PATH
 
+            export CC="gcc -Wl,--rpath=/opt/glibc-2.35/lib"
+            export CXX="g++ -Wl,--rpath=/opt/glibc-2.35/lib"
+
             cmake -DCMAKE_BUILD_TYPE=Release \
                   -DVCPKG_BUILD_TYPE=release \
-                  -DCMAKE_EXE_LINKER_FLAGS="-Wl,--rpath=/opt/glibc-2.35/lib -static-libgcc -static-libstdc++" \
-                  -DCMAKE_C_FLAGS="-I/opt/glibc-2.35/include" \
-                  -DCMAKE_CXX_FLAGS="-I/opt/glibc-2.35/include" \
                   -B build -S . \
                   -DCMAKE_TOOLCHAIN_FILE='${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake'
           else
