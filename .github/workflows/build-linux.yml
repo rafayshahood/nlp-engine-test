@@ -84,8 +84,14 @@ jobs:
         run: ./bin/nlp --version || true
 
  
-      - name: Copy nlp.exe to nlpl.exe
+      - name: Copy nlp.exe to nlpl.exe (Non-20.04)
+        if: matrix.os != 'ubuntu-20.04'
         run: cp bin/nlp bin/nlpl.exe
+        shell: bash
+
+      - name: Copy nlp.exe to nlpl.exe (20.04)
+        if: matrix.os == 'ubuntu-20.04'
+        run: cp build/bin/nlp bin/nlpl.exe
         shell: bash
 
 

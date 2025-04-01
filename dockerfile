@@ -1,16 +1,43 @@
-# Use Ubuntu 22.04 as base
-FROM ubuntu:22.04
+FROM ubuntu:20.04
 
-# Set the architecture argument
-ARG ARCH
-RUN echo "Building for architecture: $ARCH"
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Install required dependencies
-RUN apt update && apt install -y libicu-dev pkg-config python3 ninja-build build-essential cmake g++ git curl zip unzip tar
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    g++ \
+    git \
+    curl \
+    zip \
+    unzip \
+    autoconf-archive \
+    pkg-config \
+    python3 \
+    ninja-build \
+    bison \
+    gawk \
+    libicu-dev \
+    texinfo \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy the precompiled binary (or build from source)
-COPY nlp /usr/local/bin/nlp
-RUN chmod +x /usr/local/bin/nlp
+# Create app directory
+WORKDIR /nlp-engine-test
 
-# Set the entrypoint to the nlp binary
-CMD ["nlp", "--version"]
+# Clone your repo and submodules
+RUN git clone --recurse-submodules https://github.com/rafayshahood/nlp-engine-test.git .
+
+# Bootstrap vcpkg
+RUN ./vcpkg/bootstrap-vcpkg.sh && ./vcpkg/vcpkg install
+
+# Build the project
+RUN mkdir -p build && \
+    cmake -DCMAKE_BUILD_TYPE=Release \
+          -DVCPKG_BUILD_TYPE=release \
+          -B build -S . \
+          -DCMAKE_TOOLCHAIN_FILE=/nlp-engine-test/vcpkg/scripts/buildsystems/vcpkg.cmake && \
+    cmake --build build --target all
+
+# Set binary location
+ENV PATH="/nlp-engine-test/bin:${PATH}"
