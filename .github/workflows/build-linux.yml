@@ -45,7 +45,7 @@ jobs:
                   -B build -S . \
                   -DCMAKE_TOOLCHAIN_FILE="/workspace/vcpkg/scripts/buildsystems/vcpkg.cmake"
             cmake --build build --target all
-            cp bin/nlp bin/nlpl.exe
+            chown -R 1001:1001 ./bin
 
       - name: Install Required Dependencies (Non-20.04)
         if: matrix.os != 'ubuntu-20.04'
