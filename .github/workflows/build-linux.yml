@@ -34,35 +34,11 @@ jobs:
             echo "===== [DEBUG] OS and Initial Versions ====="
             lsb_release -a || true
             uname -a
-            echo "ICU Version:" && dpkg -l | grep libicu || true
-            echo "glibc Version:" && ldd --version | head -n 1
-            echo "Python Version:" && python3 --version
-            echo "Gawk Version:" && gawk --version | head -n 1 || echo "gawk not installed"
-            echo "Bison Version:" && bison --version | head -n 1 || echo "bison not installed"
-
              echo "===== Adding Jammy Repo for ICU 70 ====="
             echo "deb http://archive.ubuntu.com/ubuntu jammy main universe" | sudo tee -a /etc/apt/sources.list
             sudo apt update
             sudo apt install -y libicu70 libicu-dev gawk bison texinfo
 
-            echo "===== Installing glibc 2.35 ====="
-            wget http://ftp.gnu.org/gnu/libc/glibc-2.35.tar.gz
-            tar -xvzf glibc-2.35.tar.gz
-            cd glibc-2.35
-            mkdir build
-            cd build
-            ../configure --prefix=/opt/glibc-2.35
-            make -j$(nproc)
-            sudo make install
-
-            echo 'export LD_LIBRARY_PATH=/opt/glibc-2.35/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
-            echo 'export LIBRARY_PATH=/opt/glibc-2.35/lib:$LIBRARY_PATH' >> ~/.bashrc
-            echo 'export C_INCLUDE_PATH=/opt/glibc-2.35/include:$C_INCLUDE_PATH' >> ~/.bashrc
-            echo 'export CPLUS_INCLUDE_PATH=/opt/glibc-2.35/include:$CPLUS_INCLUDE_PATH' >> ~/.bashrc
-            source ~/.bashrc
-
-            echo "===== [DEBUG] Post-Install Versions ====="
-            echo "glibc Version:" && /opt/glibc-2.35/lib/ld-*.so --version || true
           fi
 
 
@@ -80,24 +56,10 @@ jobs:
 
       - name: Generate Solution Linux
         run: |
-          if [[ "${{ matrix.os }}" == "ubuntu-20.04" ]]; then
-            export LD_LIBRARY_PATH=/opt/glibc-2.35/lib:$LD_LIBRARY_PATH
-            export LIBRARY_PATH=/opt/glibc-2.35/lib:$LIBRARY_PATH
-            export C_INCLUDE_PATH=/opt/glibc-2.35/include:$C_INCLUDE_PATH
-            export CPLUS_INCLUDE_PATH=/opt/glibc-2.35/include:$CPLUS_INCLUDE_PATH
-
-            export CC="gcc -Wl,--rpath=/opt/glibc-2.35/lib"
-            export CXX="g++ -Wl,--rpath=/opt/glibc-2.35/lib"
-
-            cmake -DCMAKE_BUILD_TYPE=Release \
-                  -DVCPKG_BUILD_TYPE=release \
-                  -B build -S . \
-                  -DCMAKE_TOOLCHAIN_FILE='${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake'
-          else
-            cmake -DCMAKE_BUILD_TYPE=Release \
-                  -DVCPKG_BUILD_TYPE=release \
-                  -B build -S . \
-                  -DCMAKE_TOOLCHAIN_FILE='${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake'
+          cmake -DCMAKE_BUILD_TYPE=Release \
+                -DVCPKG_BUILD_TYPE=release \
+                -B build -S . \
+                -DCMAKE_TOOLCHAIN_FILE='${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake'
           fi
 
       - name: Cmake Build all targets Linux
@@ -177,6 +139,7 @@ jobs:
         with:
           name: libicuuc-ubuntu-latest.a
           path: vcpkg_installed/x64-linux/lib/libicuuc.a
+          
 
 
       - name: Checkout Analyzers Repo
@@ -185,6 +148,8 @@ jobs:
           repository: VisualText/analyzers
           submodules: recursive
           path: analyzers
+
+
 
       - name: Run English Parser Test
         run: ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -DEV || true
