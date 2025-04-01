@@ -24,6 +24,10 @@ jobs:
         with:
           submodules: true
 
+      - name: Authenticate with GHCR
+        if: matrix.os == 'ubuntu-20.04'
+        run: echo "${{ secrets.CR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
       - name: Use Custom Docker Image on Ubuntu 20.04
         if: matrix.os == 'ubuntu-20.04'
         uses: addnab/docker-run-action@v3
@@ -74,7 +78,7 @@ jobs:
       - name: Cmake Build all targets Linux (Non-20.04)
         if: matrix.os != 'ubuntu-20.04'
         run: cmake --build build/ --target all
-        
+
       - name: Test executable --version
         run: ./bin/nlp --version || true
 
