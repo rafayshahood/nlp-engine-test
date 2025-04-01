@@ -24,50 +24,61 @@ jobs:
         with:
           submodules: true
 
-      - name: Install Required Dependencies
+      - name: Use Custom Docker Image on Ubuntu 20.04
+        if: matrix.os == 'ubuntu-20.04'
+        uses: addnab/docker-run-action@v3
+        with:
+          image: ghcr.io/rafayshahood/glibc-231-nlp:latest
+          options: -v ${{ github.workspace }}:/workspace -w /workspace
+          run: |
+            apt update && apt install -y python3
+            ./bootstrap-vcpkg.sh
+            ./vcpkg/vcpkg install
+            mkdir -p build
+            cmake -DCMAKE_BUILD_TYPE=Release \
+                  -DVCPKG_BUILD_TYPE=release \
+                  -B build -S . \
+                  -DCMAKE_TOOLCHAIN_FILE="/workspace/vcpkg/scripts/buildsystems/vcpkg.cmake"
+            cmake --build build --target all
+            cp bin/nlp bin/nlpl.exe
+
+      - name: Install Required Dependencies (Non-20.04)
+        if: matrix.os != 'ubuntu-20.04'
         run: |
           sudo apt update
           sudo apt install -y autoconf-archive pkg-config python3 ninja-build build-essential cmake g++ git curl zip unzip tar
-         
 
-          if [[ "${{ matrix.os }}" == "ubuntu-20.04" ]]; then
-            echo "===== [DEBUG] OS and Initial Versions ====="
-            lsb_release -a || true
-            uname -a
-             echo "===== Adding Jammy Repo for ICU 70 ====="
-            echo "deb http://archive.ubuntu.com/ubuntu jammy main universe" | sudo tee -a /etc/apt/sources.list
-            sudo apt update
-            sudo apt install -y libicu70 libicu-dev gawk bison texinfo
-
-          fi
-
-
-      - name: Vcpkg Bootstrap Shell
+      - name: Vcpkg Bootstrap Shell (Non-20.04)
+        if: matrix.os != 'ubuntu-20.04'
         run: ./bootstrap-vcpkg.sh
         shell: bash
         working-directory: vcpkg
 
-      - name: Install 3rd Party
+      - name: Install 3rd Party (Non-20.04)
+        if: matrix.os != 'ubuntu-20.04'
         run: vcpkg install
         working-directory: vcpkg
 
-      - name: Create Build Directory
+      - name: Create Build Directory (Non-20.04)
+        if: matrix.os != 'ubuntu-20.04'
         run: mkdir -p build
 
-      - name: Generate Solution Linux
+      - name: Generate Solution Linux (Non-20.04)
+        if: matrix.os != 'ubuntu-20.04'
         run: |
           cmake -DCMAKE_BUILD_TYPE=Release \
                 -DVCPKG_BUILD_TYPE=release \
                 -B build -S . \
                 -DCMAKE_TOOLCHAIN_FILE='${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake'
 
-      - name: Cmake Build all targets Linux
+      - name: Cmake Build all targets Linux (Non-20.04)
+        if: matrix.os != 'ubuntu-20.04'
         run: cmake --build build/ --target all
 
-
-      - name: Test executable --version
+       - name: Test executable --version
         run: ./bin/nlp --version || true
 
+ 
       - name: Copy nlp.exe to nlpl.exe
         run: cp bin/nlp bin/nlpl.exe
         shell: bash
