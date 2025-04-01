@@ -24,17 +24,18 @@ jobs:
         with:
           submodules: true
 
-      - name: Authenticate with GHCR
-        if: matrix.os == 'ubuntu-20.04'
-        run: echo "${{ secrets.CR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
+      # 🐳 Custom Docker Image for Ubuntu 20.04
       - name: Use Custom Docker Image on Ubuntu 20.04
         if: matrix.os == 'ubuntu-20.04'
         uses: addnab/docker-run-action@v3
         with:
           image: ghcr.io/rafayshahood/glibc-231-nlp:latest
-          options: -v ${{ github.workspace }}:/workspace -w /workspace
+          options: >-
+            -v ${{ github.workspace }}:/workspace
+            -w /workspace
+            -e CR_PAT=${{ secrets.CR_PAT }}
           run: |
+            echo "$CR_PAT" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             apt update && apt install -y python3
             ./bootstrap-vcpkg.sh
             ./vcpkg/vcpkg install
