@@ -74,9 +74,9 @@ jobs:
       - name: Cmake Build all targets Linux (Non-20.04)
         if: matrix.os != 'ubuntu-20.04'
         run: cmake --build build/ --target all
-
+        
       - name: Test executable --version
-      run: ./bin/nlp --version || true
+        run: ./bin/nlp --version || true
 
  
       - name: Copy nlp.exe to nlpl.exe
