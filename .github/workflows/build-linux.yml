@@ -89,9 +89,13 @@ jobs:
         run: cp bin/nlp bin/nlpl.exe
         shell: bash
 
-      - name: Copy nlp.exe to nlpl.exe (20.04)
+      - name: Fix permissions and copy nlp.exe to nlpl.exe (20.04)
         if: matrix.os == 'ubuntu-20.04'
-        run: cp bin/nlp bin/nlpl.exe
+        run: |
+          chmod +w bin
+          chmod +x bin/nlp
+          cp bin/nlp bin/nlpl.exe
+        shell: bash
 
 
       # ✅ Upload Executable with Updated Naming
