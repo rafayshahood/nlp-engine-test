@@ -60,7 +60,6 @@ jobs:
                 -DVCPKG_BUILD_TYPE=release \
                 -B build -S . \
                 -DCMAKE_TOOLCHAIN_FILE='${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake'
-          fi
 
       - name: Cmake Build all targets Linux
         run: cmake --build build/ --target all
