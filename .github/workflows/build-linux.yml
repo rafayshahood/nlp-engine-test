@@ -176,14 +176,13 @@ jobs:
 
 
       - name: Run English Parser Test
-        run: ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -DEV || true
-
+        run: ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -LOG rfb-logs -DEV
 
       - name: Full English Test
         uses: LouisBrunner/diff-action@v0.2.0
         with:
           old: .github/workflows/tests/parse-en-us/final.tree
-          new: ./analyzers/parse-en-us/input/doj.txt_log/final.tree
+          new: ./rfb-logs/final.tree
           mode: addition
           tolerance: same
           output: parse-en-us-diff-lin.txt
