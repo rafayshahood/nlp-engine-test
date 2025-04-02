@@ -173,7 +173,12 @@ jobs:
           submodules: recursive
           path: analyzers
 
-      # ✅ Parser test for Ubuntu 20.04
+
+      - name: Prepare folders (20.04)
+        if: matrix.os == 'ubuntu-20.04'
+        run: |
+          mkdir -p rfb-logs data/rfb/spec
+
       - name: Run English Parser Test (20.04)
         if: matrix.os == 'ubuntu-20.04'
         run: ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -LOG rfb-logs -DEV
@@ -187,6 +192,7 @@ jobs:
           mode: addition
           tolerance: same
           output: parse-en-us-diff-lin.txt
+
 
       # ✅ Parser test for Ubuntu 22.04 & latest
       - name: Run English Parser Test (Non-20.04)
