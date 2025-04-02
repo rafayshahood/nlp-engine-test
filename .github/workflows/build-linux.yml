@@ -193,8 +193,8 @@ jobs:
         if: matrix.os != 'ubuntu-20.04'
         run: ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -DEV || true
 
-        - name: Full English Test (Non-20.04)
-          if: matrix.os != 'ubuntu-20.04'
+      - name: Full English Test (Non-20.04)
+        if: matrix.os != 'ubuntu-20.04'
         uses: LouisBrunner/diff-action@v0.2.0
         with:
           old: .github/workflows/tests/parse-en-us/final.tree
