@@ -42,8 +42,9 @@ jobs:
             -w /workspace
           run: |
             git clone --recurse-submodules https://github.com/VisualText/analyzers.git analyzers
-            chown -R $(id -u):$(id -g) analyzers   # ⚡ no sudo
-            mkdir -p build
+            chown -R $(id -u):$(id -g) analyzers
+            chmod -R u+w analyzers   # ✅ Force writable
+            mkdir -p build          
             cmake -DCMAKE_BUILD_TYPE=Release \
                   -DCMAKE_TOOLCHAIN_FILE="/workspace/vcpkg/scripts/buildsystems/vcpkg.cmake" \
                   -B build -S .
