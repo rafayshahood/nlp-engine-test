@@ -20,6 +20,12 @@ jobs:
 
     steps:
 
+      - name: Checkout Repository
+        if: matrix.os != 'ubuntu-20.04'
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
     # ===============================
     # Ubuntu 20.04 (Docker Build)
     # ===============================
@@ -45,11 +51,7 @@ jobs:
 
 
     
-      - name: Checkout Repository
-        if: matrix.os != 'ubuntu-20.04'
-        uses: actions/checkout@v3
-        with:
-          submodules: true
+
 
 
       - name: Install Required Dependencies (Non-20.04)
