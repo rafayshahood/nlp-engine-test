@@ -39,6 +39,7 @@ jobs:
           image: ghcr.io/rafayshahood/glibc-231-nlp:latest
           options: >-
             --shm-size=512m
+            --mount type=tmpfs,destination=/dev/shm
             -v ${{ github.workspace }}:/workspace
             -w /workspace
           run: |
