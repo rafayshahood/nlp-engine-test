@@ -173,6 +173,15 @@ jobs:
           submodules: recursive
           path: analyzers
 
+      # After checkout analyzers repo
+      - name: Change back to root (20.04)
+        if: matrix.os == 'ubuntu-20.04'
+        run: cd ${{ github.workspace }}
+
+      - name: Change back to root (Non-20.04)
+        if: matrix.os != 'ubuntu-20.04'
+        run: cd ${{ github.workspace }}
+
 
       - name: Prepare folders (20.04)
         if: matrix.os == 'ubuntu-20.04'

@@ -1,43 +1,41 @@
+# Use official Ubuntu 20.04 base
 FROM ubuntu:20.04
 
+# Avoid prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    cmake \
-    g++ \
-    git \
-    curl \
-    zip \
-    unzip \
-    autoconf-archive \
-    pkg-config \
-    python3 \
-    ninja-build \
-    bison \
-    gawk \
-    libicu-dev \
-    texinfo \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+# Install necessary tools and libraries
+RUN apt update && apt install -y \
+    git build-essential cmake g++ curl unzip zip tar \
+    autoconf-archive pkg-config python3 ninja-build libicu-dev
 
-# Create app directory
+# Clone your repository (deep clone)
+RUN git clone --recurse-submodules https://github.com/rafayshahood/nlp-engine-test.git /nlp-engine-test
+
+# Set working directory
 WORKDIR /nlp-engine-test
 
-# Clone your repo and submodules
-RUN git clone --recurse-submodules https://github.com/rafayshahood/nlp-engine-test.git .
+# Bootstrap vcpkg (required to install libraries later)
+RUN ./vcpkg/bootstrap-vcpkg.sh && \
+    ./vcpkg/vcpkg install
+    
+# Create build directory
+RUN mkdir build
 
-# Bootstrap vcpkg
-RUN ./vcpkg/bootstrap-vcpkg.sh && ./vcpkg/vcpkg install
-
-# Build the project
-RUN mkdir -p build && \
-    cmake -DCMAKE_BUILD_TYPE=Release \
+# Configure the project
+RUN cmake -DCMAKE_BUILD_TYPE=Release \
           -DVCPKG_BUILD_TYPE=release \
           -B build -S . \
-          -DCMAKE_TOOLCHAIN_FILE=/nlp-engine-test/vcpkg/scripts/buildsystems/vcpkg.cmake && \
-    cmake --build build --target all
+          -DCMAKE_TOOLCHAIN_FILE="/nlp-engine-test/vcpkg/scripts/buildsystems/vcpkg.cmake"
 
-# Set binary location
-ENV PATH="/nlp-engine-test/bin:${PATH}"
+# Compile the project
+RUN cmake --build build --target all
+
+# Create a writable bin/ folder just in case
+RUN chmod +w /nlp-engine-test/bin
+
+# Change default directory again
+WORKDIR /nlp-engine-test
+
+# Default shell when container runs
+CMD [ "bash" ]
