@@ -154,11 +154,14 @@ jobs:
           submodules: recursive
           path: analyzers
 
-      - name: Prepare folders (20.04)
+      # ✅ Prepare and Copy Spec Files (Needed to Avoid Crash)
+      - name: Prepare Spec Files (20.04)
         if: matrix.os == 'ubuntu-20.04'
         run: |
           mkdir -p rfb-logs data/rfb/spec
+          cp -r .github/workflows/tests/parse-en-us/spec/* data/rfb/spec/
 
+      # ✅ Run Parser Test (20.04)
       - name: Run English Parser Test (20.04)
         if: matrix.os == 'ubuntu-20.04'
         uses: addnab/docker-run-action@v3
@@ -170,11 +173,9 @@ jobs:
           run: |
             mkdir -p build
             cmake -DCMAKE_BUILD_TYPE=Release \
-                  -DVCPKG_BUILD_TYPE=release \
                   -B build -S . \
                   -DCMAKE_TOOLCHAIN_FILE="/workspace/vcpkg/scripts/buildsystems/vcpkg.cmake"
             cmake --build build --target all
-            mkdir -p rfb-logs data/rfb/spec
             ulimit -n 4096
             ulimit -v unlimited
             ./bin/nlp --version
