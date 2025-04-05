@@ -158,7 +158,7 @@ jobs:
         if: matrix.os == 'ubuntu-20.04'
         run: |
           mkdir -p rfb-logs data/rfb/spec
-
+          
       - name: Run English Parser Test (20.04)
         if: matrix.os == 'ubuntu-20.04'
         uses: addnab/docker-run-action@v3
