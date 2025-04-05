@@ -175,6 +175,9 @@ jobs:
                   -DCMAKE_TOOLCHAIN_FILE="/workspace/vcpkg/scripts/buildsystems/vcpkg.cmake"
             cmake --build build --target all
             mkdir -p rfb-logs data/rfb/spec
+            ulimit -n 4096
+            ulimit -u 4096
+            ulimit -v unlimited
             ./bin/nlp --version
             ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -LOG rfb-logs -DEV
  
