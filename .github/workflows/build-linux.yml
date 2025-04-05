@@ -81,11 +81,11 @@ jobs:
       - name: Fix permissions and copy nlp.exe to nlpl.exe (20.04)
         if: matrix.os == 'ubuntu-20.04'
         run: |
-          chmod +w bin
-          chmod +x bin/nlp
-          cp bin/nlp bin/nlpl.exe
+          chmod +w build/bin
+          chmod +x build/bin/nlp
+          mkdir -p bin
+          cp build/bin/nlp bin/nlpl.exe
         shell: bash
-
 
       # ✅ Upload Executable with Updated Naming
       - name: Upload nlpl.exe (Ubuntu 20.04)
