@@ -20,6 +20,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
+        if: matrix.os != 'ubuntu-20.04'
         uses: actions/checkout@v3
         with:
           submodules: true
@@ -147,39 +148,26 @@ jobs:
           
 
 
+      # Analyzers Repo - only checkout if NOT 20.04
       - name: Checkout Analyzers Repo
+        if: matrix.os != 'ubuntu-20.04'
         uses: actions/checkout@v3
         with:
           repository: VisualText/analyzers
           submodules: recursive
           path: analyzers
 
-      - name: Prepare Spec Files (20.04)
-        if: matrix.os == 'ubuntu-20.04'
-        run: |
-          mkdir -p rfb-logs data/rfb/spec
-          [ -d ".github/workflows/tests/parse-en-us/spec" ] && cp -r .github/workflows/tests/parse-en-us/spec/* data/rfb/spec/ || echo "No spec files to copy."
+       # Prepare folders
+      - name: Prepare folders
+        run: mkdir -p rfb-logs data/rfb/spec
 
-      # ✅ Run Parser Test (20.04)
+      # 🛠️ Run English Parser Test (Different for 20.04 vs Non-20.04)
       - name: Run English Parser Test (20.04)
         if: matrix.os == 'ubuntu-20.04'
-        uses: addnab/docker-run-action@v3
-        with:
-          image: ghcr.io/rafayshahood/glibc-231-nlp:latest
-          options: >-
-            -v ${{ github.workspace }}:/workspace
-            -w /workspace
-          run: |
-            mkdir -p build
-            cmake -DCMAKE_BUILD_TYPE=Release \
-                  -B build -S . \
-                  -DCMAKE_TOOLCHAIN_FILE="/workspace/vcpkg/scripts/buildsystems/vcpkg.cmake"
-            cmake --build build --target all
-            ulimit -n 4096
-            ulimit -v unlimited
-            ./bin/nlp --version
-            ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -LOG rfb-logs -DEV
- 
+        run: |
+          ./bin/nlp --version
+          ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -LOG rfb-logs -DEV
+
       - name: Full English Test (20.04)
         if: matrix.os == 'ubuntu-20.04'
         uses: LouisBrunner/diff-action@v0.2.0

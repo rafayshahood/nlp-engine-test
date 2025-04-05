@@ -15,6 +15,9 @@ RUN apt update && apt install -y \
 # Clone your project
 RUN git clone --recurse-submodules https://github.com/rafayshahood/nlp-engine-test.git /nlp-engine-test
 
+# Clone analyzers repo WITH submodules
+RUN git clone --recurse-submodules https://github.com/VisualText/analyzers.git /nlp-engine-test/analyzers
+
 # Set working directory
 WORKDIR /nlp-engine-test
 
@@ -27,9 +30,8 @@ RUN ./vcpkg/vcpkg install
 # Build the project
 RUN mkdir -p build && \
     cmake -DCMAKE_BUILD_TYPE=Release \
-          -DVCPKG_BUILD_TYPE=release \
-          -B build -S . \
-          -DCMAKE_TOOLCHAIN_FILE="/nlp-engine-test/vcpkg/scripts/buildsystems/vcpkg.cmake" && \
+          -DCMAKE_TOOLCHAIN_FILE="/nlp-engine-test/vcpkg/scripts/buildsystems/vcpkg.cmake" \
+          -B build -S . && \
     cmake --build build --target all
 
 # Fix permissions for bin
@@ -38,5 +40,5 @@ RUN chmod +w /nlp-engine-test/bin
 # Set default workdir for running commands
 WORKDIR /nlp-engine-test
 
-# ✅ Set runtime environment variables (Optional but good practice)
+# ✅ Set runtime environment variables
 ENV LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
