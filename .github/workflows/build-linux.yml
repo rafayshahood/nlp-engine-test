@@ -154,12 +154,11 @@ jobs:
           submodules: recursive
           path: analyzers
 
-      # ✅ Prepare and Copy Spec Files (Needed to Avoid Crash)
       - name: Prepare Spec Files (20.04)
         if: matrix.os == 'ubuntu-20.04'
         run: |
           mkdir -p rfb-logs data/rfb/spec
-          cp -r .github/workflows/tests/parse-en-us/spec/* data/rfb/spec/
+          [ -d ".github/workflows/tests/parse-en-us/spec" ] && cp -r .github/workflows/tests/parse-en-us/spec/* data/rfb/spec/ || echo "No spec files to copy."
 
       # ✅ Run Parser Test (20.04)
       - name: Run English Parser Test (20.04)
