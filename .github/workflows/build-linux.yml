@@ -25,18 +25,13 @@ jobs:
         with:
           submodules: true
 
-      - name: Checkout analyzers repo (for Ubuntu 20.04 too)
-        if: matrix.os == 'ubuntu-20.04'
-        uses: actions/checkout@v3
-        with:
-          repository: VisualText/analyzers
-          path: analyzers
-          submodules: recursive
+
 
     # ===============================
     # Ubuntu 20.04 (Docker Build)
     # ===============================
 # 3. Now run Docker
+
       - name: Build and Run (Ubuntu 20.04)
         if: matrix.os == 'ubuntu-20.04'
         uses: addnab/docker-run-action@v3
@@ -46,6 +41,7 @@ jobs:
             -v ${{ github.workspace }}:/workspace
             -w /workspace
           run: |
+            git clone --recurse-submodules https://github.com/VisualText/analyzers.git analyzers   # ✅ clone analyzers inside Docker
             mkdir -p build
             cmake -DCMAKE_BUILD_TYPE=Release \
                   -DCMAKE_TOOLCHAIN_FILE="/workspace/vcpkg/scripts/buildsystems/vcpkg.cmake" \
@@ -55,8 +51,6 @@ jobs:
             mkdir -p tmp rfb-logs data/rfb/spec analyzers/parse-en-us/output
             ./bin/nlp --version
             ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -LOG rfb-logs -DEV
-    
-
 
 
       - name: Install Required Dependencies (Non-20.04)
