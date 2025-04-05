@@ -40,6 +40,3 @@ WORKDIR /nlp-engine-test
 
 # ✅ Set runtime environment variables (Optional but good practice)
 ENV LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
-
-# ✅ Default command (Optional if you want to override later)
-CMD ["/bin/bash"]

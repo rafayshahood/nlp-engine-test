@@ -159,6 +159,7 @@ jobs:
         run: |
           mkdir -p rfb-logs data/rfb/spec
 
+
       - name: Run English Parser Test (20.04)
         if: matrix.os == 'ubuntu-20.04'
         uses: addnab/docker-run-action@v3
@@ -166,12 +167,12 @@ jobs:
           image: ghcr.io/rafayshahood/glibc-231-nlp:latest
           options: >-
             -v ${{ github.workspace }}:/workspace
-            -w /workspace
+            -w /nlp-engine-test   # <<<<< CHANGE workdir to where nlp is already built
           run: |
             mkdir -p rfb-logs data/rfb/spec
             ./build/bin/nlp --version
             ./build/bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -LOG rfb-logs -DEV
-
+            
       - name: Full English Test (20.04)
         if: matrix.os == 'ubuntu-20.04'
         uses: LouisBrunner/diff-action@v0.2.0
