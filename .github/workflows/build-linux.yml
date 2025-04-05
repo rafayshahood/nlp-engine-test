@@ -70,9 +70,20 @@ jobs:
         if: matrix.os != 'ubuntu-20.04'
         run: cmake --build build/ --target all
 
-      - name: Test executable --version
-        run: ./bin/nlp --version || true
+      # ✅ Separate Test Executable Version for 20.04 and Non-20.04
+      - name: Test executable --version (Ubuntu 20.04)
+        if: matrix.os == 'ubuntu-20.04'
+        uses: addnab/docker-run-action@v3
+        with:
+          image: ghcr.io/rafayshahood/glibc-231-nlp:latest
+          options: >-
+            -v ${{ github.workspace }}:/workspace
+            -w /workspace
+          run: ./bin/nlp --version || true
 
+      - name: Test executable --version (Non-20.04)
+        if: matrix.os != 'ubuntu-20.04'
+        run: ./bin/nlp --version || true
  
       - name: Copy nlp.exe to nlpl.exe (Non-20.04)
         if: matrix.os != 'ubuntu-20.04'
