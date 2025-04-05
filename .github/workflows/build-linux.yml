@@ -36,24 +36,16 @@ jobs:
           options: >-
             -v ${{ github.workspace }}:/workspace
             -w /workspace
-- name: Build and Run (Ubuntu 20.04)
-  if: matrix.os == 'ubuntu-20.04'
-  uses: addnab/docker-run-action@v3
-  with:
-    image: ghcr.io/rafayshahood/glibc-231-nlp:latest
-    options: >-
-      -v ${{ github.workspace }}:/workspace
-      -w /workspace
-    run: |
-      mkdir -p build
-      cmake -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_TOOLCHAIN_FILE="/workspace/vcpkg/scripts/buildsystems/vcpkg.cmake" \
-            -B build -S .
-      cmake --build build --target all
-      cp bin/nlp bin/nlpl.exe
-      mkdir -p tmp rfb-logs data/rfb/spec analyzers/parse-en-us/output   # ✅ CREATE FOLDERS FIRST
-      ./bin/nlp --version
-      ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -LOG rfb-logs -DEV
+          run: |
+            mkdir -p build
+            cmake -DCMAKE_BUILD_TYPE=Release \
+                  -DCMAKE_TOOLCHAIN_FILE="/workspace/vcpkg/scripts/buildsystems/vcpkg.cmake" \
+                  -B build -S .
+            cmake --build build --target all
+            cp bin/nlp bin/nlpl.exe
+            mkdir -p tmp rfb-logs data/rfb/spec analyzers/parse-en-us/output   # ✅ CREATE FOLDERS FIRST
+            ./bin/nlp --version
+            ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -LOG rfb-logs -DEV
 
     
 
