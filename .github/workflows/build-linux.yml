@@ -78,14 +78,6 @@ jobs:
         run: cp bin/nlp bin/nlpl.exe
         shell: bash
 
-      - name: Fix permissions and copy nlp.exe to nlpl.exe (20.04)
-        if: matrix.os == 'ubuntu-20.04'
-        run: |
-          chmod +w build/bin
-          chmod +x build/bin/nlp
-          mkdir -p bin
-          cp build/bin/nlp bin/nlpl.exe
-        shell: bash
 
       # ✅ Upload Executable with Updated Naming
       - name: Upload nlpl.exe (Ubuntu 20.04)
@@ -169,7 +161,16 @@ jobs:
 
       - name: Run English Parser Test (20.04)
         if: matrix.os == 'ubuntu-20.04'
-        run: ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -LOG rfb-logs -DEV
+        uses: addnab/docker-run-action@v3
+        with:
+          image: ghcr.io/rafayshahood/glibc-231-nlp:latest
+          options: >-
+            -v ${{ github.workspace }}:/workspace
+            -w /workspace
+          run: |
+            mkdir -p rfb-logs data/rfb/spec
+            ./build/bin/nlp --version
+            ./build/bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -LOG rfb-logs -DEV
 
       - name: Full English Test (20.04)
         if: matrix.os == 'ubuntu-20.04'
