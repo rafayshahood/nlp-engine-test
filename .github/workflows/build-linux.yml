@@ -53,6 +53,10 @@ jobs:
             cmake --build build --target all
             cp bin/nlp bin/nlpl.exe
             mkdir -p tmp rfb-logs data/rfb/spec analyzers/parse-en-us/output
+
+            # ✅ Important! Fix missing ICU runtime libraries
+            cp /workspace/build/vcpkg_installed/x64-linux/lib/*.so* /usr/lib/
+
             ./bin/nlp --version
             ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -LOG rfb-logs -DEV
 
