@@ -166,7 +166,10 @@ jobs:
           image: ghcr.io/rafayshahood/glibc-231-nlp:latest
           options: >-
             -w /nlp-engine-test
-          run: mkdir -p rfb-logs data/rfb/spec && ./build/bin/nlp --version && ./build/bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -LOG rfb-logs -DEV
+          run: |
+            mkdir -p rfb-logs data/rfb/spec
+            ./build/bin/nlp --version
+            ./build/bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -LOG rfb-logs -DEV
  
       - name: Full English Test (20.04)
         if: matrix.os == 'ubuntu-20.04'
