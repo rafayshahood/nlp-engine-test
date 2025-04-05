@@ -25,7 +25,7 @@ jobs:
           submodules: true
 
       # 🐳 Custom Docker Image for Ubuntu 20.04
-      - name: Use Custom Docker Image on Ubuntu 20.04
+      - name: Use Pre-Built Docker Image (Ubuntu 20.04)
         if: matrix.os == 'ubuntu-20.04'
         uses: addnab/docker-run-action@v3
         with:
@@ -33,19 +33,8 @@ jobs:
           options: >-
             -v ${{ github.workspace }}:/workspace
             -w /workspace
-            -e CR_PAT=${{ secrets.CR_PAT }}
           run: |
-            echo "$CR_PAT" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            apt update && apt install -y python3
-            ./bootstrap-vcpkg.sh
-            ./vcpkg/vcpkg install
-            mkdir -p build
-            cmake -DCMAKE_BUILD_TYPE=Release \
-                  -DVCPKG_BUILD_TYPE=release \
-                  -B build -S . \
-                  -DCMAKE_TOOLCHAIN_FILE="/workspace/vcpkg/scripts/buildsystems/vcpkg.cmake"
-            cmake --build build --target all
-            chown -R 1001:1001 ./bin
+            echo "Running inside prebuilt image. Nothing to setup."
 
       - name: Install Required Dependencies (Non-20.04)
         if: matrix.os != 'ubuntu-20.04'
@@ -172,16 +161,6 @@ jobs:
           repository: VisualText/analyzers
           submodules: recursive
           path: analyzers
-
-      # After checkout analyzers repo
-      - name: Change back to root (20.04)
-        if: matrix.os == 'ubuntu-20.04'
-        run: cd ${{ github.workspace }}
-
-      - name: Change back to root (Non-20.04)
-        if: matrix.os != 'ubuntu-20.04'
-        run: cd ${{ github.workspace }}
-
 
       - name: Prepare folders (20.04)
         if: matrix.os == 'ubuntu-20.04'

@@ -1,41 +1,45 @@
-# Use official Ubuntu 20.04 base
+# Use official Ubuntu 20.04 image
 FROM ubuntu:20.04
 
-# Avoid prompts during package installation
+# Set environment to non-interactive
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install necessary tools and libraries
+# Install required packages
 RUN apt update && apt install -y \
     git build-essential cmake g++ curl unzip zip tar \
-    autoconf-archive pkg-config python3 ninja-build libicu-dev
+    autoconf-archive pkg-config python3 ninja-build \
+    libicu-dev \
+    && apt clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Clone your repository (deep clone)
+# Clone your project
 RUN git clone --recurse-submodules https://github.com/rafayshahood/nlp-engine-test.git /nlp-engine-test
 
 # Set working directory
 WORKDIR /nlp-engine-test
 
-# Bootstrap vcpkg (required to install libraries later)
-RUN ./vcpkg/bootstrap-vcpkg.sh && \
-    ./vcpkg/vcpkg install
-    
-# Create build directory
-RUN mkdir build
+# Bootstrap vcpkg
+RUN ./vcpkg/bootstrap-vcpkg.sh
 
-# Configure the project
-RUN cmake -DCMAKE_BUILD_TYPE=Release \
+# Install libraries via vcpkg
+RUN ./vcpkg/vcpkg install
+
+# Build the project
+RUN mkdir -p build && \
+    cmake -DCMAKE_BUILD_TYPE=Release \
           -DVCPKG_BUILD_TYPE=release \
           -B build -S . \
-          -DCMAKE_TOOLCHAIN_FILE="/nlp-engine-test/vcpkg/scripts/buildsystems/vcpkg.cmake"
+          -DCMAKE_TOOLCHAIN_FILE="/nlp-engine-test/vcpkg/scripts/buildsystems/vcpkg.cmake" && \
+    cmake --build build --target all
 
-# Compile the project
-RUN cmake --build build --target all
-
-# Create a writable bin/ folder just in case
+# Fix permissions for bin
 RUN chmod +w /nlp-engine-test/bin
 
-# Change default directory again
+# Set default workdir for running commands
 WORKDIR /nlp-engine-test
 
-# Default shell when container runs
-CMD [ "bash" ]
+# ✅ Set runtime environment variables (Optional but good practice)
+ENV LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+
+# ✅ Default command (Optional if you want to override later)
+CMD ["/bin/bash"]
