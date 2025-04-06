@@ -33,6 +33,9 @@ jobs:
 # 3. Now run Docker
 
 
+      # ===============================
+      # Ubuntu 20.04 (Docker Build)
+      # ===============================
       - name: Build and Run (Ubuntu 20.04)
         if: matrix.os == 'ubuntu-20.04'
         uses: addnab/docker-run-action@v3
@@ -56,6 +59,7 @@ jobs:
             make -j$(nproc)
             cd ..
             mkdir -p rfb-logs data/rfb/spec analyzers/parse-en-us/output
+            cp ./bin/nlp ./bin/nlpl.exe  # ✅ Added copy to fix nlpl.exe
             ./bin/nlp --version
             ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -LOG rfb-logs -DEV
 
@@ -109,6 +113,8 @@ jobs:
         with:
           name: nlpl-ubuntu-20.04.exe
           path: bin/nlpl.exe
+
+
 
       - name: Upload nlpl.exe (Ubuntu 22.04)
         if: matrix.os == 'ubuntu-22.04'
