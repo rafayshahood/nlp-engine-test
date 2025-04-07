@@ -53,13 +53,21 @@ jobs:
               git build-essential cmake g++ curl unzip zip tar \
               autoconf-archive pkg-config python3 ninja-build libicu-dev
             git clone --recurse-submodules https://github.com/VisualText/analyzers.git analyzers
+
+            # ✅ Bootstrap and install vcpkg for 20.04
+            ./vcpkg/bootstrap-vcpkg.sh
+            ./vcpkg/vcpkg install
+
+            # ✅ Build using vcpkg toolchain
             mkdir -p build
-            cd build
-            cmake ..
-            make -j$(nproc)
-            cd ..
+            cmake -DCMAKE_BUILD_TYPE=Release \
+                  -DVCPKG_BUILD_TYPE=release \
+                  -DCMAKE_TOOLCHAIN_FILE="/workspace/vcpkg/scripts/buildsystems/vcpkg.cmake" \
+                  -B build -S .
+            cmake --build build --target all
+
             mkdir -p rfb-logs data/rfb/spec analyzers/parse-en-us/output
-            cp ./bin/nlp ./bin/nlpl.exe  # ✅ Added copy to fix nlpl.exe
+            cp ./bin/nlp ./bin/nlpl.exe  # ✅ Create nlpl.exe
             ./bin/nlp --version
             ./bin/nlp -ANA ./analyzers/parse-en-us -WORK ./ ./analyzers/parse-en-us/input/doj.txt -LOG rfb-logs -DEV
 
